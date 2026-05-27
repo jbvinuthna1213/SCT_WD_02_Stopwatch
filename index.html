@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Modern Stopwatch</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a);
+    overflow:auto;
+    padding:20px;
+}
+
+.container{
+    width:350px;
+    padding:30px;
+    border-radius:25px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(15px);
+    box-shadow:0 0 25px rgba(0,255,255,0.3);
+    text-align:center;
+    color:white;
+}
+
+h1{
+    margin-bottom:10px;
+    font-size:32px;
+    letter-spacing:2px;
+    color:#00ffff;
+}
+
+#datetime{
+    margin-bottom:20px;
+    font-size:14px;
+    color:#cbd5e1;
+}
+
+.circle{
+    width:230px;
+    height:230px;
+    border-radius:50%;
+    margin:20px auto;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:8px solid rgba(255,255,255,0.2);
+    position:relative;
+    box-shadow:
+        0 0 20px #00ffff,
+        inset 0 0 20px rgba(0,255,255,0.3);
+}
+
+.circle::before{
+    content:'';
+    position:absolute;
+    width:100%;
+    height:100%;
+    border-radius:50%;
+    border-top:8px solid #00ffff;
+    animation:rotate 2s linear infinite;
+}
+
+@keyframes rotate{
+    100%{
+        transform:rotate(360deg);
+    }
+}
+
+#display{
+    font-size:38px;
+    font-weight:600;
+    z-index:2;
+}
+
+.milliseconds{
+    font-size:22px;
+    color:#00ffff;
+}
+
+.buttons{
+    margin-top:25px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+}
+
+button{
+    padding:12px 18px;
+    border:none;
+    border-radius:12px;
+    font-size:15px;
+    cursor:pointer;
+    transition:0.3s;
+    color:white;
+    font-weight:600;
+    min-width:90px;
+}
+
+button:hover{
+    transform:scale(1.08);
+}
+
+button:active{
+    transform:scale(0.95);
+}
+
+.start{
+    background:#16a34a;
+    box-shadow:0 0 15px #16a34a;
+}
+
+.pause{
+    background:#eab308;
+    box-shadow:0 0 15px #eab308;
+}
+
+.reset{
+    background:#dc2626;
+    box-shadow:0 0 15px #dc2626;
+}
+
+.lap{
+    background:#2563eb;
+    box-shadow:0 0 15px #2563eb;
+}
+
+.theme{
+    background:#7c3aed;
+    box-shadow:0 0 15px #7c3aed;
+}
+
+.clear{
+    background:#0ea5e9;
+    box-shadow:0 0 15px #0ea5e9;
+}
+
+#laps{
+    margin-top:25px;
+    max-height:150px;
+    overflow-y:auto;
+    text-align:left;
+    padding:10px;
+}
+
+#laps li{
+    list-style:none;
+    padding:10px;
+    margin-bottom:8px;
+    background:rgba(255,255,255,0.08);
+    border-radius:10px;
+    border-left:4px solid #00ffff;
+}
+
+footer{
+    margin-top:20px;
+    font-size:14px;
+    color:#cbd5e1;
+}
+
+.light-mode{
+    background:linear-gradient(135deg,#dbeafe,#ffffff,#bfdbfe);
+}
+
+.light-mode .container{
+    background:white;
+    color:black;
+}
+
+.light-mode h1{
+    color:#2563eb;
+}
+
+.light-mode #display{
+    color:black;
+}
+
+.light-mode #laps li{
+    background:#f1f5f9;
+    color:black;
+}
+
+.light-mode footer{
+    color:#334155;
+}
+
+@media(max-width:480px){
+
+    .container{
+        width:90%;
+        padding:20px;
+    }
+
+    .circle{
+        width:180px;
+        height:180px;
+    }
+
+    #display{
+        font-size:28px;
+    }
+
+    .milliseconds{
+        font-size:18px;
+    }
+
+    button{
+        min-width:70px;
+        padding:10px;
+        font-size:13px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>STOPWATCH</h1>
+
+    <p id="datetime"></p>
+
+    <div class="circle">
+        <div id="display">
+            00:00:00
+            <div class="milliseconds">00</div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button class="start" onclick="startTimer()">Start</button>
+        <button class="pause" onclick="pauseTimer()">Pause</button>
+        <button class="reset" onclick="resetTimer()">Reset</button>
+        <button class="lap" onclick="lapTime()">Lap</button>
+        <button class="clear" onclick="clearLaps()">Clear Laps</button>
+        <button class="theme" onclick="toggleTheme()">Theme</button>
+    </div>
+
+    <ul id="laps"></ul>
+
+    <footer>
+        Created by Vinuthna | SkillCraft Internship Task 2
+    </footer>
+
+</div>
+
+<script>
+
+let hours = 0;
+let minutes = 0;
+let seconds = 0;
+let milliseconds = 0;
+
+let timer = null;
+
+function updateDisplay(){
+
+    let h = hours < 10 ? "0"+hours : hours;
+    let m = minutes < 10 ? "0"+minutes : minutes;
+    let s = seconds < 10 ? "0"+seconds : seconds;
+    let ms = milliseconds < 10 ? "0"+milliseconds : milliseconds;
+
+    document.getElementById("display").innerHTML =
+    `${h}:${m}:${s}
+    <div class="milliseconds">${ms}</div>`;
+}
+
+function stopwatch(){
+
+    milliseconds++;
+
+    if(milliseconds == 100){
+        milliseconds = 0;
+        seconds++;
+    }
+
+    if(seconds == 60){
+        seconds = 0;
+        minutes++;
+    }
+
+    if(minutes == 60){
+        minutes = 0;
+        hours++;
+    }
+
+    updateDisplay();
+}
+
+function startTimer(){
+
+    if(timer !== null){
+        clearInterval(timer);
+    }
+
+    timer = setInterval(stopwatch,10);
+
+    playSound();
+}
+
+function pauseTimer(){
+
+    clearInterval(timer);
+
+    playSound();
+}
+
+function resetTimer(){
+
+    clearInterval(timer);
+
+    hours = 0;
+    minutes = 0;
+    seconds = 0;
+    milliseconds = 0;
+
+    updateDisplay();
+
+    document.getElementById("laps").innerHTML = "";
+
+    playSound();
+}
+
+function lapTime(){
+
+    let lap = document.createElement("li");
+
+    lap.innerText =
+    document.getElementById("display").innerText;
+
+    document.getElementById("laps").appendChild(lap);
+
+    playSound();
+}
+
+function clearLaps(){
+
+    document.getElementById("laps").innerHTML = "";
+
+    playSound();
+}
+
+function toggleTheme(){
+
+    document.body.classList.toggle("light-mode");
+
+    playSound();
+}
+
+function playSound(){
+
+    let audio = new Audio(
+    "https://www.soundjay.com/buttons/sounds/button-16.mp3"
+    );
+
+    audio.play();
+}
+
+function updateDateTime(){
+
+    let now = new Date();
+
+    document.getElementById("datetime").innerHTML =
+    now.toLocaleString();
+}
+
+setInterval(updateDateTime,1000);
+
+updateDateTime();
+
+/* Keyboard Shortcuts */
+
+document.addEventListener("keydown",function(e){
+
+    if(e.key === "s"){
+        startTimer();
+    }
+
+    if(e.key === "p"){
+        pauseTimer();
+    }
+
+    if(e.key === "r"){
+        resetTimer();
+    }
+
+    if(e.key === "l"){
+        lapTime();
+    }
+
+});
+
+updateDisplay();
+
+</script>
+
+</body>
+</html>
